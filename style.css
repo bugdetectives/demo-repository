@@ -135,3 +135,18 @@ footer {
     margin: 5px 0;
     color: white;
 }
+
+.level:nth-child(1) {
+    background-color: lightgreen;
+    color: white;
+}
+ 
+.level:nth-child(2) {
+    background-color: orange;
+    color: white;
+}
+ 
+.level:nth-child(3) {
+    background-color: red;
+    color: white;
+}

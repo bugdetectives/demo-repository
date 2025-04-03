@@ -12,30 +12,30 @@
             <h1>BUG DETECTIVES</h1>
         </header>
         <main>
-            <button id="start-game-button" class="start-button">Start Game</button>
+            <button id="start-game-button" class="start-button" disabled>Start Game</button>
             <p class="home-screen">Home Screen</p>
             <div class="levels-grid">
-                <div class="level">
+                <div class="level" data-level="easy">
                     <img src="placeholder.png" alt="Easy">
                     <p>Easy</p>
                 </div>
-                <div class="level">
+                <div class="level" data-level="medium">
                     <img src="placeholder.png" alt="Medium">
                     <p>Medium</p>
                 </div>
-                <div class="level">
+                <div class="level" data-level="hard">
                     <img src="placeholder.png" alt="Hard">
                     <p>Hard</p>
                 </div>
-                <div class="level">
+                <div class="level" data-level="coming-soon">
                     <img src="placeholder.png" alt="Coming soon!">
                     <p>Coming soon!</p>
                 </div>
-                <div class="level">
+                <div class="level" data-level="coming-soon">
                     <img src="placeholder.png" alt="Coming soon!">
                     <p>Coming soon!</p>
                 </div>
-                <div class="level">
+                <div class="level" data-level="coming-soon">
                     <img src="placeholder.png" alt="Coming soon!">
                     <p>Coming soon!</p>
                 </div>
@@ -48,6 +48,24 @@
             <p class="footer-info">❤️ 6</p>
         </footer>
     </div>
-    <script src="script.js"></script>
+    <script>
+        const levels = document.querySelectorAll('.level');
+        const startGameButton = document.getElementById('start-game-button');
+
+        levels.forEach(level => {
+            level.addEventListener('click', () => {
+                levels.forEach(lvl => lvl.style.border = 'none');
+                level.style.border = '2px solid black';
+                if (level.dataset.level === 'easy') {
+                    startGameButton.disabled = false;
+                    startGameButton.addEventListener('click', () => {
+                        window.location.href = 'gamePlace.html';
+                    });
+                } else {
+                    startGameButton.disabled = true;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

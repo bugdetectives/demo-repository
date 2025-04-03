@@ -27,6 +27,13 @@ document.getElementById('start-game-button').addEventListener('click', () => {
     }
 });
 
+const bugContainer = document.getElementById("bug-container");
+        const questionContainer = document.getElementById("question-container");
+        const scoreDisplay = document.getElementById("score");
+        const timerDisplay = document.getElementById("timer");
+        let score = 0;
+        let timeLeft = 60;
+
 document.getElementById('settings-button').addEventListener('click', () => {
     alert('Settings menu opened!');
     // ...future code...

@@ -2,8 +2,29 @@ document.getElementById('play-button').addEventListener('click', () => {
     window.location.href = 'levels.html';
 });
 
+let selectedLevel = null;
+
+document.querySelectorAll('.level').forEach(level => {
+    level.addEventListener('click', () => {
+        // Deselect previously selected level
+        document.querySelectorAll('.level').forEach(l => l.classList.remove('selected'));
+        
+        // Mark the clicked level as selected
+        level.classList.add('selected');
+        selectedLevel = level.dataset.level;
+
+        // Enable the "Start Game" button
+        const startButton = document.getElementById('start-game-button');
+        startButton.disabled = false;
+    });
+});
+
 document.getElementById('start-game-button').addEventListener('click', () => {
-    window.location.href = 'gamePlace.html';
+    if (selectedLevel === 'easy') {
+        window.location.href = 'gamePlace.html';
+    } else {
+        alert('This level is not available yet!');
+    }
 });
 
 document.getElementById('settings-button').addEventListener('click', () => {

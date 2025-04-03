@@ -5,11 +5,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bug Detectives</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <h1>BUG DETECTIVES</h1>
+    <div class="game-place">
+        <header>
+            <h1>BUG DETECTIVES</h1>
+        </header>
 
+        <main>
+            <p>Timer: <span id="timer">30</span>sec</p>
+            <p id="score">Score: 0</p>
+            <!--this div for the place for the game-->
+            <div id="game-container"></div>
+            <!--this dive for the puzzle place-->
+            <p id="puzzle-question">Correct the following code:</p>
+            
+            <div id="code-container"></div>
+
+            <textarea id="code-input" placeholder="Write you code here"></textarea>
+            <!--This button for check the answer-->
+            <button onclick="checkAnswer()">Send</button>
+
+        </main>
+        <footer>
+            <button id="sound-button" class="sound-button">🔊</button>
+            <p class="footer-info">A Time</p>
+            <p class="footer-info">Level 8</p>
+            <p class="footer-info">❤️ 6</p>
+        </footer>
+
+    </div>
+    <script src="script.js"></script>
 </body>
 
 </html>

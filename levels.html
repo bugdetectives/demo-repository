@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bug Buster - Levels</title>
+    <title>Select Level</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="game-container">
         <header>
-            <h1>BUG BUSTER</h1>
+            <h1>Select Level</h1>
         </header>
         <main>
-            <button id="start-game-button" class="start-button" disabled>Start Game</button>
             <div class="levels-grid">
                 <div class="level" data-level="easy">
                     <img src="images/SimpleBug.png" alt="Easy">
@@ -26,38 +28,25 @@
                     <img src="images/FastBug.png" alt="Hard">
                     <p>Hard</p>
                 </div>
-                <div class="level" data-level="coming-soon">
-                    <img src="images/FastDangerBug.png" alt="Coming soon!">
+                <div class="level" data-level="expert">
+                    <img src="images/FastDangerBug.png" alt="Expert">
                     <p>Expert</p>
                 </div>
-                <div class="level" data-level="coming-soon">
-                    <img src="images/StrongBug.png" alt="Coming soon!">
+                <div class="level" data-level="insane">
+                    <img src="images/StrongBug.png" alt="Insane">
                     <p>Insane</p>
                 </div>
-                <div class="level" data-level="coming-soon">
-                    <img src="images/SuperFastBug.png" alt="Coming soon!">
+                <div class="level" data-level="impossible">
+                    <img src="images/SuperFastBug.png" alt="Impossible">
                     <p>Impossible</p>
                 </div>
             </div>
+            <button id="start-game-button" class="start-button">Start Game</button>
         </main>
-        <div id="popup" class="popup hidden">
-            <div class="popup-content">
-                <span id="popup-close" class="popup-close">×</span>
-                <p>You have to select a level before you can start!</p>
-            </div>
-        </div>
-        <footer>
-            <button id="sound-button" class="sound-button">🔊</button>
-            <p class="footer-info">A Time</p>
-            <p class="footer-info">Level 8</p>
-            <p class="footer-info">❤️ 6</p>
-        </footer>
     </div>
     <script>
         const levels = document.querySelectorAll('.level');
         const startGameButton = document.getElementById('start-game-button');
-        const popup = document.getElementById('popup');
-        const popupClose = document.getElementById('popup-close');
         let selectedLevel = null;
 
         levels.forEach(level => {
@@ -65,7 +54,6 @@
                 levels.forEach(lvl => lvl.classList.remove('selected'));
                 level.classList.add('selected');
                 selectedLevel = level.dataset.level;
-                startGameButton.disabled = false;
             });
         });
 
@@ -73,12 +61,8 @@
             if (selectedLevel) {
                 window.location.href = 'gamePlace.html';
             } else {
-                popup.classList.remove('hidden'); // Show popup if no level is selected
+                alert('Please select a level first!');
             }
-        });
-
-        popupClose.addEventListener('click', () => {
-            popup.classList.add('hidden'); // Close popup when the X is clicked
         });
     </script>
 </body>

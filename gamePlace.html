@@ -1,35 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-
+ 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bug Busters</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
+ 
 <body>
     <div class="game-place">
         <header>
             <h1>Hit START when you're ready!</h1>
             <div class="score-time">
                 <div class="score">Score: <span id="score">0</span></div>
+                <!-- Make sure the ID is correct -->
                 <button id="start-new-game" class="start-button">Start New Game</button>
             </div>
-            <div class="time">Time: <span id="time">30</span>s</div>
+            <!-- Make sure the ID is correct -->
+            <div class="time">Time: <span id="time">3:00</span></div>
         </header>
-
+ 
         <main>
+            <!-- Grid container for bugs -->
             <div id="game-container">
-                <!-- Bugs will be dynamically added here -->
+                <!-- Bugs will be dynamically added here by script.js -->
             </div>
         </main>
-
+ 
         <footer>
             <button id="sound-button" class="sound-button">🔊</button>
         </footer>
     </div>
+ 
+    <!-- Link the script HERE, just before closing body tag -->
     <script src="script.js"></script>
 </body>
-
 </html>

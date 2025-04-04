@@ -31,6 +31,35 @@ document.querySelectorAll('.level').forEach(level => {
     });
 });
 
+document.getElementById('start-new-game').addEventListener('click', () => {
+    const gameContainer = document.getElementById('game-container');
+    gameContainer.innerHTML = ''; // Clear existing bugs
+
+    const bugImages = [
+        'images/SimpleBug.png',
+        'images/FastBug.png',
+        'images/ComplexBug.png',
+        'images/StrongBug.png'
+    ];
+
+    // Spawn 16 bugs with random images
+    for (let i = 0; i < 16; i++) {
+        const bug = document.createElement('div');
+        bug.classList.add('bug');
+
+        // Randomly select a bug image
+        const img = document.createElement('img');
+        img.src = bugImages[Math.floor(Math.random() * bugImages.length)];
+        img.alt = `Bug ${i + 1}`;
+        bug.appendChild(img);
+
+        gameContainer.appendChild(bug);
+    }
+
+    // Start a 3-minute timer
+    startTimer(180, 'time');
+});
+
 // Example arrays of questions categorized by difficulty
 const questions = {
     easy: [

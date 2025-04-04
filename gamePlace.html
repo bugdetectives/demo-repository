@@ -4,77 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bug Detectives</title>
+    <title>Bug Busters</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <div class="game-place">
         <header>
-            <h1>BUG BUSTER - GAME</h1>
+            <h1>Hit START when you're ready!</h1>
+            <div class="score-time">
+                <div class="score">Score: <span id="score">0</span></div>
+                <button id="start-new-game" class="start-button">Start New Game</button>
+            </div>
+            <div class="time">Time: <span id="time">30</span>s</div>
         </header>
 
         <main>
-            <div id="game-header">
-                <p>Timer: <span id="timer">30</span> sec</p>
-                <p id="score">Score: 0</p>
-            </div>
             <div id="game-container">
-                <p id="puzzle-question">What is the correct way to declare a variable in JavaScript?</p>
-                <div id="code-container">
-                    <ul class="answers">
-                        <li class="answer" data-correct="false">var = myVariable;</li>
-                        <li class="answer" data-correct="true">let myVariable = 10;</li>
-                        <li class="answer" data-correct="false">variable myVariable = 10;</li>
-                        <li class="answer" data-correct="false">myVariable == 10;</li>
-                    </ul>
-                </div>
-                <button id="check-answer" class="start-button">Check</button>
-                <p id="feedback" class="hidden"></p>
+                <!-- Bugs will be dynamically added here -->
             </div>
         </main>
+
         <footer>
             <button id="sound-button" class="sound-button">🔊</button>
-            <p class="footer-info">Time Left</p>
-            <p class="footer-info">Level 1</p>
-            <p class="footer-info">5❤️</p>
         </footer>
-
     </div>
     <script src="script.js"></script>
-    <script>
-        const answers = document.querySelectorAll('.answer');
-        const checkButton = document.getElementById('check-answer');
-        const feedback = document.getElementById('feedback');
-
-        answers.forEach(answer => {
-            answer.addEventListener('click', () => {
-                answers.forEach(a => a.classList.remove('selected'));
-                answer.classList.add('selected');
-            });
-        });
-
-        checkButton.addEventListener('click', () => {
-            const selectedAnswer = document.querySelector('.answer.selected');
-            if (!selectedAnswer) {
-                feedback.textContent = 'Please select an answer!';
-                feedback.classList.remove('hidden');
-                feedback.style.color = 'orange';
-                return;
-            }
-
-            if (selectedAnswer.dataset.correct === 'true') {
-                selectedAnswer.style.backgroundColor = 'green';
-                feedback.textContent = 'Correct! Variables in JavaScript are declared using "let", "const", or "var".';
-                feedback.style.color = 'green';
-            } else {
-                selectedAnswer.style.backgroundColor = 'red';
-                feedback.textContent = 'Incorrect! The correct answer is "let myVariable = 10;".';
-                feedback.style.color = 'red';
-            }
-            feedback.classList.remove('hidden');
-        });
-    </script>
 </body>
 
 </html>

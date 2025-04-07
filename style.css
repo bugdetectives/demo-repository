@@ -67,7 +67,7 @@ main h1 {
 
 .menu p:hover {
     color: #fff;
-    transform: scale(1.1);
+    transform: scale(1.027);
 }
 
 footer {
@@ -260,4 +260,103 @@ textarea:focus {
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+/* Popup styles */
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #222; /* Dark background like header */
+    color: #f0f0f0; /* Light text */
+    padding: 25px;
+    border-radius: 0; /* No rounded corners */
+    border: 4px solid #555; /* Solid border like levels */
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.6); /* Stronger retro shadow */
+    z-index: 1000;
+    /* display: none; /* Controlled by .hidden class */
+    text-align: center;
+    width: 400px; /* Adjust width as needed */
+    font-family: 'Press Start 2P', cursive; /* Pixel font */
+}
+
+/* Class to hide the popup */
+.popup.hidden {
+    display: none;
+}
+
+.popup-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#question-text {
+    margin-bottom: 25px;
+    font-size: 1rem; /* Adjust if needed */
+    line-height: 1.5; /* Spacing for pixel font */
+    color: #f0e68c; /* Accent color for question */
+    text-shadow: 2px 2px 0px #000; /* Text shadow */
+}
+
+.answers {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Space between buttons */
+    margin: 15px 0;
+    width: 100%; /* Buttons take full width */
+}
+
+.answer {
+    background-color: #333; /* Dark button background */
+    border: 2px solid #555; /* Standard border */
+    color: #f0f0f0; /* Light text */
+    padding: 12px 15px; /* Padding */
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, transform 0.1s;
+    font-family: 'Press Start 2P', cursive; /* Pixel font */
+    font-size: 0.85rem; /* Slightly smaller for answers */
+    text-align: left;
+    border-radius: 0; /* No rounded corners */
+    text-shadow: 1px 1px 0px #000;
+}
+
+.answer:hover {
+    background-color: #555; /* Darker hover */
+    color: #fff;
+}
+
+.answer:active {
+    transform: scale(0.98); /* Press effect */
+}
+
+/* Style for the selected answer */
+.answer.selected {
+    background-color: #f0e68c; /* Golden highlight */
+    color: #333; /* Dark text on highlight */
+    border-color: #f0f0f0; /* Lighter border when selected */
+    text-shadow: none; /* Remove shadow on selected */
+}
+
+.confirm-button {
+    background: #5cb85c; /* Greenish confirm */
+    border: 2px solid #4cae4c; /* Darker green border */
+    color: white;
+    padding: 12px 25px; /* Padding */
+    cursor: pointer;
+    border-radius: 0; /* No rounded corners */
+    transition: background 0.2s, transform 0.1s;
+    font-family: 'Press Start 2P', cursive; /* Pixel font */
+    font-size: 1rem;
+    margin-top: 20px; /* Space above confirm button */
+    text-shadow: 2px 2px 0px #333; /* Shadow */
+}
+
+.confirm-button:hover {
+    background: #4cae4c; /* Darker green on hover */
+}
+
+.confirm-button:active {
+    transform: scale(0.98); /* Press effect */
 }

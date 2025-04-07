@@ -54,6 +54,9 @@
                 levels.forEach(lvl => lvl.classList.remove('selected'));
                 level.classList.add('selected');
                 selectedLevel = level.dataset.level;
+
+                // Store the selected difficulty in localStorage
+                localStorage.setItem('selectedDifficulty', selectedLevel);
             });
         });
 

@@ -105,6 +105,7 @@ footer img {
     padding: 15px;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
+    margin-top: 20px; /* Optional: Add margin to the Sound button for consistency */
 }
 
 .sound-button:hover {
@@ -189,12 +190,16 @@ footer img {
     left: 50%; /* Center horizontally */
     transform: translate(-50%, -50%); /* Adjust for true centering */
     font-family: 'Press Start 2P', cursive; /* Retro font */
-    color: #f0e68c; /* Golden color */
-    text-shadow: 2px 2px 4px #000; /* Retro shadow */
-    font-size: 1.2rem; /* Adjust font size */
-    line-height: 1.8; /* Add spacing between lines */
+    color: #ff0606; /* Bright golden color */
+    text-shadow: 4px 4px 8px #000; /* Strong retro shadow */
+    font-size: 2rem; /* Larger font size for visibility */
+    line-height: 2; /* Add spacing between lines */
     text-align: center; /* Center text alignment */
     z-index: 10; /* Ensure it appears above bugs */
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+    padding: 20px; /* Add padding around the text */
+    border: 4px solid #fa1b1b; /* Golden border */
+    border-radius: 10px; /* Slightly rounded corners for retro feel */
 }
 
 #code-container {
@@ -501,3 +506,82 @@ textarea:focus {
     transform: translateY(-50%) rotate(-90deg); /* Rotate 90 degrees to the left */
 }
 
+#start-new-game {
+    background: #ffcc00; /* Bright golden background */
+    border: 3px solid #ff9900; /* Darker golden border */
+    color: #000; /* Dark text for contrast */
+    font-size: 1.2rem; /* Slightly larger font size */
+    font-family: 'Press Start 2P', cursive; /* Retro font */
+    padding: 15px 30px; /* Add more padding for better visibility */
+    cursor: pointer;
+    text-transform: uppercase; /* Make text uppercase for emphasis */
+    transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+    box-shadow: 4px 4px 0px #000; /* Retro shadow effect */
+    margin-bottom: 30px; /* Add margin to create distance */
+}
+
+#start-new-game:hover {
+    background: #ff9900; /* Darker golden hover effect */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+    box-shadow: 6px 6px 0px #000; /* Stronger shadow on hover */
+}
+
+#start-new-game:active {
+    transform: scale(0.95); /* Press effect */
+    box-shadow: 2px 2px 0px #000; /* Reduced shadow on press */
+}
+
+/* Leaderboards Popup styles */
+#leaderboards-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #222; /* Dark background */
+    color: #f0f0f0; /* Light text */
+    padding: 25px;
+    border-radius: 0; /* No rounded corners */
+    border: 4px solid #555; /* Solid border */
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.6); /* Retro shadow */
+    z-index: 1000;
+    text-align: center;
+    width: 400px; /* Adjust width as needed */
+    font-family: 'Press Start 2P', cursive; /* Retro font */
+}
+
+#leaderboards-popup.hidden {
+    display: none;
+}
+
+#leaderboards-text {
+    margin-bottom: 25px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #f0e68c; /* Accent color */
+    text-shadow: 2px 2px 0px #000; /* Text shadow */
+}
+
+#play-button {
+    background: #ffcc00; /* Bright golden background */
+    border: 4px solid #ff9900; /* Darker golden border */
+    color: #000; /* Dark text for contrast */
+    font-size: 2rem; /* Larger font size */
+    font-family: 'Press Start 2P', cursive; /* Retro font */
+    padding: 20px 40px; /* Add more padding for better visibility */
+    cursor: pointer;
+    text-transform: uppercase; /* Make text uppercase for emphasis */
+    transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+    box-shadow: 6px 6px 0px #000; /* Retro shadow effect */
+    margin-bottom: 150px; /* Increase margin to create more distance */
+}
+
+#play-button:hover {
+    background: #ff9900; /* Darker golden hover effect */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+    box-shadow: 8px 8px 0px #000; /* Stronger shadow on hover */
+}
+
+#play-button:active {
+    transform: scale(0.95); /* Press effect */
+    box-shadow: 4px 4px 0px #000; /* Reduced shadow on press */
+}

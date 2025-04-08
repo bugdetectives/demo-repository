@@ -10,7 +10,6 @@
 </head>
 <body>
     <div class="game-container">
-    <!-- Add pipes for decoration -->
         <div class="pipe pipe-left"></div>
         <div class="pipe pipe-right"></div>
         <main>
@@ -20,8 +19,8 @@
             </div>
             <div class="menu">
                 <p id="how-to-play">How to play</p><br>
-                <p>Score</p><br>
-                <p id="sound-settings">Sound</p>
+                <p id="leaderboards">Leaderboards</p><br>
+                <p id="sound-settings">Sound</p><br>
             </div>
             <div class="player-info">
                 <button id="play-button" class="start-button">START</button>
@@ -44,52 +43,25 @@
         </div>
     </div>
 
+    <!-- Popup for Leaderboards -->
+    <div id="leaderboards-popup" class="popup hidden">
+        <div class="popup-content">
+            <p id="leaderboards-text">Coming Soon!</p>
+            <button id="close-leaderboards-popup" class="confirm-button">Close</button>
+        </div>
+    </div>
+
     <!-- Popup for Sound Settings -->
     <div id="sound-popup" class="popup hidden">
         <div class="popup-content">
             <p id="sound-popup-text">Adjust Volume</p>
             <input id="volume-slider" type="range" min="0" max="100" value="50">
             <p id="volume-value">Volume: 50%</p>
+            <button id="confirm-volume" class="confirm-button">Confirm</button>
             <button id="close-sound-popup" class="confirm-button">Close</button>
         </div>
     </div>
 
     <script src="script.js"></script>
-    <script>
-        // Handle "How to Play" popup
-        const howToPlayButton = document.getElementById('how-to-play');
-        const howToPlayPopup = document.getElementById('how-to-play-popup');
-        const closeHowToPlayButton = document.getElementById('close-how-to-play');
-
-        howToPlayButton.addEventListener('click', () => {
-            howToPlayPopup.classList.remove('hidden');
-        });
-
-        closeHowToPlayButton.addEventListener('click', () => {
-            howToPlayPopup.classList.add('hidden');
-        });
-
-        // Handle Sound Settings popup
-        const soundSettingsButton = document.getElementById('sound-settings');
-        const soundPopup = document.getElementById('sound-popup');
-        const closeSoundPopupButton = document.getElementById('close-sound-popup');
-        const volumeSlider = document.getElementById('volume-slider');
-        const volumeValue = document.getElementById('volume-value');
-
-        soundSettingsButton.addEventListener('click', () => {
-            soundPopup.classList.remove('hidden');
-        });
-
-        closeSoundPopupButton.addEventListener('click', () => {
-            soundPopup.classList.add('hidden');
-        });
-
-        volumeSlider.addEventListener('input', (event) => {
-            const volume = event.target.value;
-            volumeValue.textContent = `Volume: ${volume}%`;
-            console.log(`Volume set to: ${volume}%`);
-            // Add logic to adjust game volume if needed
-        });
-    </script>
 </body>
 </html>

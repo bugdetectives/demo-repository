@@ -479,3 +479,25 @@ textarea:focus {
     color: #f0e68c; /* Accent color */
     text-shadow: 2px 2px 0px #000; /* Text shadow */
 }
+
+/* Pipe styles */
+.pipe {
+    position: absolute;
+    width: 450px;
+    height: 450px;
+    background: url('images/pipe.jpg') no-repeat center center;
+    background-size: contain;
+}
+
+.pipe-left {
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%) rotate(90deg); /* Rotate 90 degrees to the right */
+}
+
+.pipe-right {
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%) rotate(-90deg); /* Rotate 90 degrees to the left */
+}
+

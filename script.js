@@ -389,7 +389,7 @@ function confirmAnswer() {
     if (!currentQuestionData || !currentBug) {
         console.error("Missing question data or bug reference on confirm.");
         // Attempt to gracefully hide popup and reset if possible
-        if(questionPopup) questionPopup.classList.add('hidden');
+        if (questionPopup) questionPopup.classList.add('hidden');
         currentBug = null;
         currentQuestionData = null;
         selectedAnswerButton = null;
@@ -401,6 +401,17 @@ function confirmAnswer() {
     console.log(`Selected: ${selectedValue}, Correct: ${correctAnswer}`); // Log: Comparison
 
     // --- Process Answer ---
+    const currentAnswerButtons = questionPopup.querySelectorAll('.answers .answer');
+    currentAnswerButtons.forEach(button => {
+        if (button.dataset.answerValue === correctAnswer) {
+            button.style.backgroundColor = '#5cb85c'; // Green for correct answer
+            button.style.color = '#fff';
+        } else if (button === selectedAnswerButton) {
+            button.style.backgroundColor = '#d9534f'; // Red for incorrect answer
+            button.style.color = '#fff';
+        }
+    });
+
     if (selectedValue === correctAnswer) {
         // CORRECT
         console.log("Answer CORRECT");
@@ -409,36 +420,38 @@ function confirmAnswer() {
 
         // Remove the correctly answered bug
         currentBug.remove(); // Remove the specific bug div
-
     } else {
         // INCORRECT
         console.log("Answer INCORRECT");
-        alert(`Incorrect! The correct answer was: ${correctAnswer}`);
         lives--;
         console.log("Lives left:", lives); // Update lives display later if needed
 
         // Check for game over BEFORE spawning new bugs
         if (lives <= 0) {
             gameOver("You ran out of lives!");
-            // Don't hide popup or reset state yet, gameOver handles it
             return;
         } else {
             // Spawn two new bugs because the answer was wrong
             console.log("Spawning 2 bugs due to incorrect answer.");
             spawnBug();
             spawnBug();
-            // The incorrect bug (currentBug) remains on the screen
         }
     }
 
     // --- Cleanup and Hide Popup (if game didn't end) ---
-    console.log("Hiding popup and resetting state."); // Log: Cleanup
-    if(questionPopup) questionPopup.classList.add('hidden');
-    currentBug = null; // Reset reference (bug is gone or stays but is no longer 'active')
-    currentQuestionData = null; // Reset question
-    selectedAnswerButton = null; // Reset selection
-}
+    setTimeout(() => {
+        if (questionPopup) questionPopup.classList.add('hidden');
+        currentBug = null; // Reset reference (bug is gone or stays but is no longer 'active')
+        currentQuestionData = null; // Reset question
+        selectedAnswerButton = null; // Reset selection
 
+        // Reset button styles
+        currentAnswerButtons.forEach(button => {
+            button.style.backgroundColor = ''; // Reset background color
+            button.style.color = ''; // Reset text color
+        });
+    }, 2000); // Delay hiding popup to show feedback
+}
 
 // --- Start Game ---
 function startGame() {
@@ -494,13 +507,29 @@ function gameOver(message) {
     console.log("Game Over:", message);
     if (timerInterval) clearInterval(timerInterval);
 
-    alert(`Game Over!\n${message}\nFinal Score: ${score}`);
+    // Remove all bugs from the screen
+    if (gameContainer) {
+        gameContainer.innerHTML = ''; // Clear all bugs from the game container
+    }
 
-    if(startNewGameButton) startNewGameButton.disabled = false;
-    if(gameContainer) gameContainer.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #f0e68c; font-size: 1.5em; font-family: 'Press Start 2P', cursive; text-shadow: 2px 2px #000;">Game Over!</p>`;
+    // Display the message in the center of the game container
+    if (gameContainer) {
+        const gameOverMessage = document.createElement('div');
+        gameOverMessage.classList.add('game-over-message');
+        gameOverMessage.innerHTML = `
+            Game Over!<br>
+            ${message}<br>
+            Final Score: ${score}
+        `;
+        gameContainer.appendChild(gameOverMessage);
+    }
+
+    if (startNewGameButton) startNewGameButton.disabled = false;
+
     // Ensure popup is hidden on game over
-    if(questionPopup) questionPopup.classList.add('hidden');
-    // Reset potentially active question state just in case
+    if (questionPopup) questionPopup.classList.add('hidden');
+
+    // Reset potentially active question state
     currentBug = null;
     currentQuestionData = null;
     selectedAnswerButton = null;
@@ -602,9 +631,138 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
              console.error("Play button (#play-button) not found on index.html.");
         }
+
+        // Fix for "How to play" button
+        const howToPlayButton = document.getElementById('how-to-play');
+        if (howToPlayButton) {
+            howToPlayButton.addEventListener('click', () => {
+                const popup = document.getElementById('how-to-play-popup');
+                if (popup) popup.classList.remove('hidden');
+            });
+        }
+
+        // Fix for "Leaderboards" button
+        const leaderboardsButton = document.getElementById('leaderboards');
+        if (leaderboardsButton) {
+            leaderboardsButton.addEventListener('click', () => {
+                const popup = document.getElementById('leaderboards-popup');
+                if (popup) popup.classList.remove('hidden');
+            });
+        }
+
+        // Fix for "Sound" button
+        const soundSettingsButton = document.getElementById('sound-settings');
+        if (soundSettingsButton) {
+            soundSettingsButton.addEventListener('click', () => {
+                const popup = document.getElementById('sound-popup');
+                if (popup) popup.classList.remove('hidden');
+            });
+        }
+
+        // Close buttons for popups
+        const closeHowToPlay = document.getElementById('close-how-to-play');
+        if (closeHowToPlay) {
+            closeHowToPlay.addEventListener('click', () => {
+                const popup = document.getElementById('how-to-play-popup');
+                if (popup) popup.classList.add('hidden');
+            });
+        }
+
+        const closeLeaderboards = document.getElementById('close-leaderboards-popup');
+        if (closeLeaderboards) {
+            closeLeaderboards.addEventListener('click', () => {
+                const popup = document.getElementById('leaderboards-popup');
+                if (popup) popup.classList.add('hidden');
+            });
+        }
+
+        const closeSoundPopup = document.getElementById('close-sound-popup');
+        if (closeSoundPopup) {
+            closeSoundPopup.addEventListener('click', () => {
+                const popup = document.getElementById('sound-popup');
+                if (popup) popup.classList.add('hidden');
+            });
+        }
+
+        console.log("Event listeners for index.html buttons set up.");
     } else if (window.location.pathname.includes('levels.html')) {
          console.log("On levels.html");
-         // Logic specific to levels page (mostly handled by inline script)
+
+        // Fix for level selection on levels.html
+        const levels = document.querySelectorAll('.level');
+        levels.forEach(level => {
+            level.addEventListener('click', () => {
+                levels.forEach(l => l.classList.remove('selected')); // Deselect all levels
+                level.classList.add('selected'); // Select the clicked level
+            });
+        });
+
+        // Fix for the "Start Game" button on levels.html
+        const startGameButton = document.getElementById('start-game-button');
+        if (startGameButton) {
+            startGameButton.addEventListener('click', () => {
+                const selectedLevel = document.querySelector('.level.selected');
+                if (selectedLevel) {
+                    const level = selectedLevel.dataset.level;
+                    localStorage.setItem('selectedDifficulty', level); // Save selected level
+                    window.location.href = 'gamePlace.html';
+                } else {
+                    alert('Please select a level before starting the game!');
+                }
+            });
+        }
+
+        // Fix for buttons inside images (e.g., "How to play", "Leaderboards", "Sound")
+        const howToPlayButton = document.getElementById('how-to-play');
+        const leaderboardsButton = document.getElementById('leaderboards');
+        const soundSettingsButton = document.getElementById('sound-settings');
+
+        if (howToPlayButton) {
+            howToPlayButton.addEventListener('click', () => {
+                const popup = document.getElementById('how-to-play-popup');
+                if (popup) popup.classList.remove('hidden');
+            });
+        }
+
+        if (leaderboardsButton) {
+            leaderboardsButton.addEventListener('click', () => {
+                const popup = document.getElementById('leaderboards-popup');
+                if (popup) popup.classList.remove('hidden');
+            });
+        }
+
+        if (soundSettingsButton) {
+            soundSettingsButton.addEventListener('click', () => {
+                const popup = document.getElementById('sound-popup');
+                if (popup) popup.classList.remove('hidden');
+            });
+        }
+
+        // Close buttons for popups
+        const closeHowToPlay = document.getElementById('close-how-to-play');
+        const closeLeaderboards = document.getElementById('close-leaderboards-popup');
+        const closeSoundPopup = document.getElementById('close-sound-popup');
+
+        if (closeHowToPlay) {
+            closeHowToPlay.addEventListener('click', () => {
+                const popup = document.getElementById('how-to-play-popup');
+                if (popup) popup.classList.add('hidden');
+            });
+        }
+
+        if (closeLeaderboards) {
+            closeLeaderboards.addEventListener('click', () => {
+                const popup = document.getElementById('leaderboards-popup');
+                if (popup) popup.classList.add('hidden');
+            });
+        }
+
+        if (closeSoundPopup) {
+            closeSoundPopup.addEventListener('click', () => {
+                const popup = document.getElementById('sound-popup');
+                if (popup) popup.classList.add('hidden');
+            });
+        }
     }
 
 
@@ -615,5 +773,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Fix for volume slider functionality
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+
+    if (volumeSlider && volumeValue) {
+        volumeSlider.addEventListener('input', () => {
+            const volume = volumeSlider.value;
+            volumeValue.textContent = `Volume: ${volume}%`;
+        });
+    }
+
+    console.log("Volume slider functionality set up.");
     console.log("Initial setup complete."); // Log: End of setup
 });

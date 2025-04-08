@@ -44,29 +44,6 @@
             <button id="start-game-button" class="start-button">Start Game</button>
         </main>
     </div>
-    <script>
-        const levels = document.querySelectorAll('.level');
-        const startGameButton = document.getElementById('start-game-button');
-        let selectedLevel = null;
-
-        levels.forEach(level => {
-            level.addEventListener('click', () => {
-                levels.forEach(lvl => lvl.classList.remove('selected'));
-                level.classList.add('selected');
-                selectedLevel = level.dataset.level;
-
-                // Store the selected difficulty in localStorage
-                localStorage.setItem('selectedDifficulty', selectedLevel);
-            });
-        });
-
-        startGameButton.addEventListener('click', () => {
-            if (selectedLevel) {
-                window.location.href = 'gamePlace.html';
-            } else {
-                alert('Please select a level first!');
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

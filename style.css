@@ -31,7 +31,7 @@ body.levels-background {
 }
 
 body.page-with-background { /* Used for gamePlace.html */
-    background-image: url('images/background2.jpg'); /* Or another background if desired */
+    background-image: url('images/gameplacebackground.webp'); /* Or another background if desired */
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -219,6 +219,10 @@ body.levels-background h1 {
     border-radius: 0;
     box-shadow: none;
     /* filter: brightness(0) invert(1); */ /* Apply filter only here if needed */
+}
+
+body.levels-background .level img {
+    filter: brightness(0) invert(1); /* Makes level images white */
 }
 
 .level p {

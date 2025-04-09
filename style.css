@@ -5,6 +5,7 @@ body {
     background-color: #000; /* Dark background fallback */
     color: #f0f0f0; /* Light text color */
     font-size: 1.2rem;
+    overflow: hidden
 }
 
 /* Import Google Fonts */
@@ -394,9 +395,10 @@ body.levels-background .level img {
     z-index: 5;
 }
 .bug img {
-    max-width: 90%;
-    max-height: 90%;
+    max-width: 80%;
+    max-height: 80%;
     object-fit: contain;
+    display: block;
     /* No filter applied here by default */
 }
 
@@ -654,5 +656,28 @@ body.levels-background .level img {
     100% { transform: scale(1); }
 }
 
-/* Apply pulse to something if needed */
-/* .some-element { animation: pulse 1s infinite; } */
+/* --- Styles for Lives/Hearts --- */
+.lives { /* Container for hearts */
+    display: flex;
+    align-items: center; /* Align hearts vertically */
+    gap: 5px; /* Space between hearts */
+    padding: 8px 10px; /* Match score/time padding */
+    background-color: #333; /* Match score/time background */
+    border: 1px solid #555; /* Match score/time border */
+    border-radius: 0;
+}
+
+.heart {
+    font-size: 1.5rem; /* Size of the heart */
+    color: #ff4d4d; /* Red color */
+    text-shadow: 1px 1px #8b0000; /* Dark red shadow */
+    transition: color 0.3s ease, opacity 0.3s ease; /* Smooth transition */
+    line-height: 1; /* Prevent extra vertical space */
+}
+
+.heart-lost {
+    color: #555; /* Gray color for lost heart */
+    text-shadow: none;
+    /* Alternative: opacity: 0.3; */
+}
+/* --- End Styles for Lives/Hearts --- */

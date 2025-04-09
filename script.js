@@ -4,6 +4,7 @@ const scoreDisplay = document.getElementById('score');
 const timeDisplay = document.getElementById('time');
 const startNewGameButton = document.getElementById('start-new-game');
 const soundButton = document.getElementById('sound-button');
+const livesContainer = document.getElementById('lives-container'); // Keep this if you added hearts
 
 // --- Popup Elements ---
 const questionPopup = document.getElementById('question-popup');
@@ -13,13 +14,20 @@ const confirmAnswerButton = document.getElementById('confirm-answer');
 
 // --- Game State Variables ---
 let score = 0;
-let lives = 3;
+const MAX_LIVES = 3; // Keep if using hearts
+let lives = MAX_LIVES; // Keep if using hearts
 let timerInterval = null;
 let timeLeft = 180; // Default time, will be overwritten by difficulty
 let selectedDifficulty = "easy"; // Default difficulty
 let currentBug = null; // The bug div element that was clicked
 let currentQuestionData = null; // The question object being asked
 let selectedAnswerButton = null; // The answer button element that was clicked
+let occupiedCells = new Set(); // <<< FIX: To track occupied cells
+
+// --- Grid Constants ---
+const MAX_COL = 6;
+const MAX_ROW = 4;
+const MAX_CELLS = MAX_COL * MAX_ROW;
 
 // --- Bug Images ---
 const bugImages = [
@@ -197,6 +205,24 @@ function getRandomQuestion(difficulty = "easy") {
     return question;
 }
 
+// --- Function to update lives display (if using hearts) ---
+function updateLivesDisplay() {
+    if (!livesContainer) {
+        // console.warn("Lives container not found, cannot update display.");
+        return; // Exit if container not found
+    }
+    livesContainer.innerHTML = ''; // Clear for new hearts
+    for (let i = 1; i <= MAX_LIVES; i++) {
+        const heart = document.createElement('span');
+        heart.classList.add('heart');
+        heart.textContent = '♥'; // Use a heart character
+        if (i > lives) {
+            heart.classList.add('heart-lost'); // Style for lost hearts
+        }
+        livesContainer.appendChild(heart);
+    }
+}
+
 
 function startTimer(duration, displayElement) {
     if (timerInterval) clearInterval(timerInterval);
@@ -221,29 +247,40 @@ function startTimer(duration, displayElement) {
     }, 1000);
 }
 
+// --- MODIFIED spawnBug Function ---
 function spawnBug() {
-    // Ensure game container exists before spawning
     if (!gameContainer) {
         console.error("Game container not found, cannot spawn bug.");
         return;
     }
+
+    // <<< FIX 1: Check if grid is already full >>>
+    if (occupiedCells.size >= MAX_CELLS) {
+        console.warn("Grid is full, cannot spawn more bugs.");
+        return; // Don't spawn if no space left
+    }
+
     const bug = document.createElement('div');
     bug.classList.add('bug');
 
-    const maxCol = 6;
-    const maxRow = 4;
-    let col, row, attempts = 0;
-    const maxAttempts = 30; // Limit attempts to find empty spot
+    let col, row, cellKey, attempts = 0;
+    const maxAttempts = MAX_CELLS * 2; // Increased attempts limit
 
+    // <<< FIX 2: Use occupiedCells Set for checking >>>
     do {
-        col = Math.floor(Math.random() * maxCol) + 1;
-        row = Math.floor(Math.random() * maxRow) + 1;
+        col = Math.floor(Math.random() * MAX_COL) + 1;
+        row = Math.floor(Math.random() * MAX_ROW) + 1;
+        cellKey = `c${col}r${row}`; // Create a unique key like "c3r2"
         attempts++;
         if (attempts > maxAttempts) {
-             console.warn(`Could not find empty spot for bug after ${maxAttempts} attempts.`);
-             return; // Stop trying if grid might be full
+             console.error(`Could not find empty spot for bug after ${maxAttempts} attempts. Aborting spawn.`);
+             return; // Stop trying
         }
-    } while (gameContainer.querySelector(`.bug[style*="grid-column: ${col};"][style*="grid-row: ${row};"]`));
+    } while (occupiedCells.has(cellKey)); // Check if the Set already has this key
+
+    // <<< FIX 3: Add the new cell to the Set and store key on element >>>
+    occupiedCells.add(cellKey);
+    bug.dataset.cellKey = cellKey; // Store the key for later removal
 
     bug.style.gridColumn = col;
     bug.style.gridRow = row;
@@ -254,45 +291,37 @@ function spawnBug() {
     img.onerror = () => { bug.style.backgroundColor = 'red'; bug.textContent = 'X'; };
     bug.appendChild(img);
 
-    // Add the click listener to THIS specific bug instance
     bug.addEventListener('click', () => handleBugClick(bug));
 
     gameContainer.appendChild(bug);
-    // console.log(`Bug spawned at ${col}, ${row}`);
+    // console.log(`Bug spawned at ${col}, ${row} (Key: ${cellKey}). Occupied: ${occupiedCells.size}`);
 }
+// --- END OF MODIFIED spawnBug ---
+
 
 // --- Handle Bug Click (Opens Popup) ---
 function handleBugClick(clickedBug) {
-    console.log("handleBugClick triggered for bug:", clickedBug); // Log: Start of function
+    // console.log("handleBugClick triggered for bug:", clickedBug); // Log: Start of function
 
-    // 1. Check if popup element exists
     if (!questionPopup) {
         console.error("Question popup element not found!");
         return;
     }
-
-    // 2. Check if popup is already visible (should not happen if logic is correct)
     if (!questionPopup.classList.contains('hidden')) {
-        console.warn("handleBugClick called while popup is already visible.");
+        // console.warn("handleBugClick called while popup is already visible.");
         return;
     }
-
-    // 3. Check if we are already processing a question (should not happen)
     if (currentQuestionData || currentBug) {
-         console.warn("handleBugClick called while another question is active.");
-         // Optionally force hide popup and reset state here if needed
-         // questionPopup.classList.add('hidden');
-         // currentBug = null; currentQuestionData = null; selectedAnswerButton = null;
-         // return;
+         // console.warn("handleBugClick called while another question is active.");
+         return;
     }
 
-    console.log("Proceeding to open popup..."); // Log: Checks passed
+    // console.log("Proceeding to open popup..."); // Log: Checks passed
 
     currentBug = clickedBug; // Store reference to the clicked bug DIV
     currentQuestionData = getRandomQuestion(selectedDifficulty);
     selectedAnswerButton = null; // Reset selected answer button
 
-    // --- Populate Popup ---
     if (!questionText) {
         console.error("Question text element not found!");
         currentBug = null; // Reset state
@@ -301,9 +330,7 @@ function handleBugClick(clickedBug) {
     }
     questionText.textContent = currentQuestionData.question;
 
-    // Get the answer buttons *inside* the popup dynamically each time
     const currentAnswerButtons = questionPopup.querySelectorAll('.answers .answer');
-
     if (currentAnswerButtons.length !== 4) {
         console.error("Expected 4 answer buttons, found:", currentAnswerButtons.length);
         currentBug = null; // Reset state
@@ -311,18 +338,14 @@ function handleBugClick(clickedBug) {
         return; // Cannot proceed
     }
 
-    // Remove old listeners and set new text/data using cloning
     try {
-        // Check if shuffledAnswers exists before trying to use it
         if (!currentQuestionData.shuffledAnswers || currentQuestionData.shuffledAnswers.length !== 4) {
-             console.error("Shuffled answers are missing or incorrect length for question:", currentQuestionData.question);
-             // Attempt to recover by shuffling the original answers
+             console.error("Shuffled answers missing/incorrect length for question:", currentQuestionData.question);
              if (currentQuestionData.answers && currentQuestionData.answers.length === 4) {
                  console.warn("Attempting recovery by shuffling original answers.");
                  currentQuestionData.shuffledAnswers = [...currentQuestionData.answers];
                  shuffleArray(currentQuestionData.shuffledAnswers);
              } else {
-                 // If recovery fails, stop to prevent errors
                  throw new Error("Cannot proceed without valid shuffled answers.");
              }
         }
@@ -330,20 +353,14 @@ function handleBugClick(clickedBug) {
         currentAnswerButtons.forEach((button, index) => {
             const answerText = currentQuestionData.shuffledAnswers[index];
             const newButton = button.cloneNode(true); // Clone to remove listeners
-
             newButton.textContent = answerText;
             newButton.dataset.answerValue = answerText; // Store the actual answer value
             newButton.classList.remove('selected'); // Ensure clone is not selected
-
-            // Replace the old button with the new one in the DOM
             if (button.parentNode) {
                 button.parentNode.replaceChild(newButton, button);
             } else {
                  console.error("Button parent node not found during replacement.");
             }
-
-
-            // Add the click listener to the NEW button
             newButton.addEventListener('click', handleAnswerSelection);
         });
     } catch (error) {
@@ -354,41 +371,33 @@ function handleBugClick(clickedBug) {
         return; // Stop execution if button setup fails
     }
 
-
-    // --- Show Popup ---
-    console.log("Removing 'hidden' class to show popup."); // Log: About to show
+    // console.log("Removing 'hidden' class to show popup."); // Log: About to show
     questionPopup.classList.remove('hidden');
-    console.log("Popup should be visible. Hidden class present?", questionPopup.classList.contains('hidden')); // Log: Verify class removal
+    // console.log("Popup should be visible. Hidden class present?", questionPopup.classList.contains('hidden')); // Log: Verify class removal
 }
 
 
 // --- Handle Answer Selection (Highlights Button) ---
 function handleAnswerSelection(event) {
-    // Get all buttons within this specific popup instance again
     const currentAnswerButtons = questionPopup.querySelectorAll('.answers .answer');
     currentAnswerButtons.forEach(btn => btn.classList.remove('selected'));
-
     selectedAnswerButton = event.target; // The button element that was clicked
     if (selectedAnswerButton) {
         selectedAnswerButton.classList.add('selected');
-        console.log("Selected answer:", selectedAnswerButton.dataset.answerValue);
+        // console.log("Selected answer:", selectedAnswerButton.dataset.answerValue);
     }
 }
 
-// --- Handle Answer Confirmation (Checks Answer, Updates Game State) ---
+// --- MODIFIED Handle Answer Confirmation ---
 function confirmAnswer() {
-    console.log("confirmAnswer triggered."); // Log: Start confirm
+    // console.log("confirmAnswer triggered.");
 
-    // 1. Check if an answer was selected
     if (!selectedAnswerButton) {
         alert('Please select an answer!');
         return;
     }
-
-    // 2. Check if we have the necessary context (question data and bug)
     if (!currentQuestionData || !currentBug) {
         console.error("Missing question data or bug reference on confirm.");
-        // Attempt to gracefully hide popup and reset if possible
         if (questionPopup) questionPopup.classList.add('hidden');
         currentBug = null;
         currentQuestionData = null;
@@ -398,104 +407,137 @@ function confirmAnswer() {
 
     const selectedValue = selectedAnswerButton.dataset.answerValue;
     const correctAnswer = currentQuestionData.correct;
-    console.log(`Selected: ${selectedValue}, Correct: ${correctAnswer}`); // Log: Comparison
+    // console.log(`Selected: ${selectedValue}, Correct: ${correctAnswer}`);
 
-    // --- Process Answer ---
     const currentAnswerButtons = questionPopup.querySelectorAll('.answers .answer');
+    let isCorrect = (selectedValue === correctAnswer);
+
+    // Visual feedback (Optional: Keep or remove color changes)
     currentAnswerButtons.forEach(button => {
+        button.style.transition = 'background-color 0.3s ease';
         if (button.dataset.answerValue === correctAnswer) {
-            button.style.backgroundColor = '#5cb85c'; // Green for correct answer
+            button.style.backgroundColor = '#5cb85c'; // Green
             button.style.color = '#fff';
-        } else if (button === selectedAnswerButton) {
-            button.style.backgroundColor = '#d9534f'; // Red for incorrect answer
+        } else if (button === selectedAnswerButton && !isCorrect) {
+            button.style.backgroundColor = '#d9534f'; // Red
             button.style.color = '#fff';
+        } else {
+             button.style.backgroundColor = '';
+             button.style.color = '';
         }
     });
 
-    if (selectedValue === correctAnswer) {
+    if (isCorrect) {
         // CORRECT
-        console.log("Answer CORRECT");
+        // console.log("Answer CORRECT");
+        const correctAnswerSound = document.getElementById('correct-answer-sound');
+        if (correctAnswerSound) {
+            correctAnswerSound.currentTime = 0;
+            correctAnswerSound.play();
+        }
         score += 10;
         if (scoreDisplay) scoreDisplay.textContent = score;
 
-        // Remove the correctly answered bug
-        currentBug.remove(); // Remove the specific bug div
+        // <<< FIX 4: Remove cell from occupiedCells Set >>>
+        const cellKeyToRemove = currentBug.dataset.cellKey;
+        if (cellKeyToRemove) {
+            occupiedCells.delete(cellKeyToRemove);
+            // console.log(`Removed ${cellKeyToRemove}. Occupied: ${occupiedCells.size}`);
+        } else {
+            console.warn("Bug element missing cellKey dataset on removal.");
+        }
 
-        // Check if all bugs are gone
-        checkWinCondition();
+        currentBug.remove(); // Remove the bug div
+        checkWinCondition(); // Check if player won
+
     } else {
         // INCORRECT
-        console.log("Answer INCORRECT");
+        // console.log("Answer INCORRECT");
+        const wrongAnswerSound = document.getElementById('wrong-answer-sound');
+        if (wrongAnswerSound) {
+            wrongAnswerSound.currentTime = 0;
+            wrongAnswerSound.play();
+        }
         lives--;
-        console.log("Lives left:", lives); // Update lives display later if needed
+        updateLivesDisplay(); // Update hearts display
+        // console.log("Lives left:", lives);
 
-        // Check for game over BEFORE spawning new bugs
+        // Show alert *after* updating hearts
+        // setTimeout(() => { alert(`Incorrect! Correct: ${correctAnswer}`); }, 100);
+
         if (lives <= 0) {
-            gameOver("You ran out of lives!");
-            return;
+            setTimeout(() => gameOver("You ran out of lives!"), 500); // Delay game over
+            return; // Stop further execution
         } else {
-            // Spawn two new bugs because the answer was wrong
-            console.log("Spawning 2 bugs due to incorrect answer.");
-            spawnBug();
-            spawnBug();
+            // Spawning bugs moved to the cleanup timeout below
+            // console.log("Will spawn 2 bugs after delay.");
         }
     }
 
-    // --- Cleanup and Hide Popup (if game didn't end) ---
+    // --- Cleanup and Hide Popup (Delay for feedback) ---
     setTimeout(() => {
         if (questionPopup) questionPopup.classList.add('hidden');
-        currentBug = null; // Reset reference (bug is gone or stays but is no longer 'active')
-        currentQuestionData = null; // Reset question
-        selectedAnswerButton = null; // Reset selection
+
+        // Spawn new bugs here if the answer was incorrect and game is not over
+        if (!isCorrect && lives > 0) {
+             // console.log("Spawning 2 bugs now.");
+             spawnBug();
+             spawnBug();
+        }
+
+        currentBug = null;
+        currentQuestionData = null;
+        selectedAnswerButton = null;
 
         // Reset button styles
         currentAnswerButtons.forEach(button => {
-            button.style.backgroundColor = ''; // Reset background color
-            button.style.color = ''; // Reset text color
+            button.style.backgroundColor = '';
+            button.style.color = '';
+            button.style.transition = '';
         });
-    }, 2000); // Delay hiding popup to show feedback
+    }, 1500); // 1.5 second delay
 }
+// --- END OF MODIFIED confirmAnswer ---
 
-// --- Start Game ---
+
+// --- MODIFIED Start Game ---
 function startGame() {
     console.log("Starting new game...");
-    if (!gameContainer || !startNewGameButton || !timeDisplay || !scoreDisplay || !questionPopup) {
+    // Include livesContainer in check if using hearts
+    if (!gameContainer || !startNewGameButton || !timeDisplay || !scoreDisplay || !questionPopup || !livesContainer) {
         console.error("Required elements not found. Cannot start game.");
         return;
     }
 
     const storedDifficulty = localStorage.getItem('selectedDifficulty');
-    // Validate the stored difficulty against the keys in the questions object
     if (storedDifficulty && questions.hasOwnProperty(storedDifficulty)) {
         selectedDifficulty = storedDifficulty;
     } else {
-        console.warn(`Stored difficulty "${storedDifficulty}" invalid or not found in questions object. Defaulting to easy.`);
+        console.warn(`Stored difficulty "${storedDifficulty}" invalid. Defaulting to easy.`);
         selectedDifficulty = 'easy';
-        localStorage.setItem('selectedDifficulty', 'easy'); // Correct localStorage
+        localStorage.setItem('selectedDifficulty', 'easy');
     }
     console.log("Difficulty set to:", selectedDifficulty);
 
-
     score = 0;
-    lives = 3;
+    lives = MAX_LIVES; // Reset lives
+    occupiedCells.clear(); // <<< FIX 5: Clear occupied cells on new game >>>
     if(scoreDisplay) scoreDisplay.textContent = score;
+    updateLivesDisplay(); // Update hearts display
     if(gameContainer) gameContainer.innerHTML = ''; // Clear board
     if(questionPopup) questionPopup.classList.add('hidden'); // Ensure popup is hidden
 
-    // --- Difficulty-based Timer ---
     let gameDuration;
     switch (selectedDifficulty) {
-        case 'medium':      gameDuration = 150; break; // 2:30
-        case 'hard':        gameDuration = 120; break; // 2:00
-        case 'expert':      gameDuration = 90;  break; // 1:30
-        case 'insane':      gameDuration = 60;  break; // 1:00
-        case 'impossible':  gameDuration = 45;  break; // 0:45
-        case 'easy':
-        default:            gameDuration = 180; break; // 3:00
+        case 'medium':      gameDuration = 150; break;
+        case 'hard':        gameDuration = 120; break;
+        case 'expert':      gameDuration = 90;  break;
+        case 'insane':      gameDuration = 60;  break;
+        case 'impossible':  gameDuration = 45;  break;
+        default:            gameDuration = 180; break;
     }
     console.log(`Game duration set to: ${gameDuration} seconds`);
 
-    // Spawn initial bugs
     const initialBugCount = 5;
     for (let i = 0; i < initialBugCount; i++) {
         spawnBug();
@@ -504,21 +546,23 @@ function startGame() {
     startTimer(gameDuration, timeDisplay);
     if(startNewGameButton) startNewGameButton.disabled = true;
 }
+// --- END OF MODIFIED startGame ---
 
-// --- Game Over ---
+
+// --- MODIFIED Game Over ---
 function gameOver(message) {
     console.log("Game Over:", message);
     if (timerInterval) clearInterval(timerInterval);
 
-    // Remove all bugs from the screen
-    if (gameContainer) {
-        gameContainer.innerHTML = ''; // Clear all bugs from the game container
-    }
+    lives = 0; // Ensure lives are 0
+    updateLivesDisplay(); // Update hearts display
+    occupiedCells.clear(); // <<< FIX 6: Clear occupied cells on game over >>>
 
-    // Display the message in the center of the game container
     if (gameContainer) {
+        gameContainer.innerHTML = ''; // Clear bugs
         const gameOverMessage = document.createElement('div');
         gameOverMessage.classList.add('game-over-message');
+        // Added <br> for better formatting in your original code
         gameOverMessage.innerHTML = `
             Game Over!<br>
             ${message}<br>
@@ -528,47 +572,88 @@ function gameOver(message) {
     }
 
     if (startNewGameButton) startNewGameButton.disabled = false;
-
-    // Ensure popup is hidden on game over
     if (questionPopup) questionPopup.classList.add('hidden');
-
-    // Reset potentially active question state
     currentBug = null;
     currentQuestionData = null;
     selectedAnswerButton = null;
 }
+// --- END OF MODIFIED gameOver ---
 
-// --- Check Win Condition ---
+
+// --- MODIFIED Check Win Condition ---
 function checkWinCondition() {
-    if (gameContainer && gameContainer.children.length === 0) {
-        displayWinPopup();
+    // Check based on occupiedCells size being 0 (more reliable than children count)
+    // Also ensure game isn't already over (lives > 0)
+    if (occupiedCells.size === 0 && lives > 0) {
+        // Add a small delay to ensure no other actions interfere
+        setTimeout(() => {
+            // Double check if still 0 and game not over
+            if (occupiedCells.size === 0 && lives > 0 && !document.getElementById('win-popup-id')) {
+                 displayWinPopup();
+            }
+        }, 300); // Short delay
     }
 }
+// --- END OF MODIFIED checkWinCondition ---
 
-// --- Display Win Popup ---
+
+// --- MODIFIED Display Win Popup ---
 function displayWinPopup() {
+    if (timerInterval) clearInterval(timerInterval); // Stop timer on win
+    console.log("You Win!");
+
+    if (document.getElementById('win-popup-id')) return; // Prevent multiple popups
+
+    occupiedCells.clear(); // <<< FIX 7: Clear occupied cells on win >>>
+
     const winPopup = document.createElement('div');
-    winPopup.classList.add('popup');
+    winPopup.id = 'win-popup-id';
+    winPopup.classList.add('popup', 'win-popup'); // Use specific class if needed
     winPopup.innerHTML = `
         <div class="popup-content">
-            <p>Congratulations! You Win!</p>
-            <button id="restart-game" class="confirm-button">Restart</button>
+            <p>Congratulations!<br>You Busted All Bugs!</p>
+            <p>Final Score: ${score}</p>
+            <button id="restart-game-win" class="confirm-button">Play Again</button>
         </div>
     `;
     document.body.appendChild(winPopup);
 
-    const restartButton = document.getElementById('restart-game');
+    const restartButton = document.getElementById('restart-game-win');
     if (restartButton) {
         restartButton.addEventListener('click', () => {
             winPopup.remove();
-            startGame();
+            if(startNewGameButton) startNewGameButton.disabled = false; // Re-enable start button
+
+            // Reset displays for next game start visual cue
+            if(scoreDisplay) scoreDisplay.textContent = 0;
+            let initialDifficulty = localStorage.getItem('selectedDifficulty') || 'easy';
+            if (!questions.hasOwnProperty(initialDifficulty)) initialDifficulty = 'easy';
+            let initialDuration;
+            switch (initialDifficulty) {
+                 case 'medium': initialDuration = 150; break;
+                 case 'hard': initialDuration = 120; break;
+                 case 'expert': initialDuration = 90; break;
+                 case 'insane': initialDuration = 60; break;
+                 case 'impossible': initialDuration = 45; break;
+                 default: initialDuration = 180; break;
+            }
+            if(timeDisplay) {
+                 const initialMinutes = Math.floor(initialDuration / 60);
+                 const initialSeconds = initialDuration % 60;
+                 timeDisplay.textContent = `${initialMinutes}:${initialSeconds < 10 ? '0' : ''}${initialSeconds}`;
+            }
+            lives = MAX_LIVES; // Reset lives variable
+            updateLivesDisplay(); // Reset hearts display
+            // Don't automatically call startGame(), let user press the button
         });
     }
 }
+// --- END OF MODIFIED displayWinPopup ---
+
 
 // --- Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM Content Loaded. Setting up listeners..."); // Log: DOM ready
+    console.log("DOM Content Loaded. Setting up listeners...");
 
     // Select elements needed for listeners *after* DOM is ready
     const localStartButton = document.getElementById('start-new-game');
@@ -576,26 +661,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const localConfirmButton = document.getElementById('confirm-answer');
     const playButtonIndex = document.getElementById('play-button'); // For index.html
 
-    // Select display elements (ensure they are selected here for initial setup)
+    // Select display elements
     const localTimeDisplay = document.getElementById('time');
     const localScoreDisplay = document.getElementById('score');
-    const localQuestionPopup = document.getElementById('question-popup'); // Re-select for clarity
+    const localQuestionPopup = document.getElementById('question-popup');
+    const localLivesContainer = document.getElementById('lives-container'); // Re-select here
 
     // Log element selection results
-    console.log({localStartButton, localSoundButton, localConfirmButton, playButtonIndex, localTimeDisplay, localScoreDisplay, localQuestionPopup});
+    // console.log({localStartButton, localSoundButton, localConfirmButton, playButtonIndex, localTimeDisplay, localScoreDisplay, localQuestionPopup, localLivesContainer});
 
 
     // --- Page Specific Logic ---
     if (window.location.pathname.includes('gamePlace.html')) {
         console.log("On gamePlace.html - Initial Setup");
 
-        // --- Set Initial Timer Display Based on Difficulty ---
         let initialDifficulty = localStorage.getItem('selectedDifficulty') || 'easy';
-        // Validate difficulty against the actual questions object
         if (!questions.hasOwnProperty(initialDifficulty)) {
-            console.warn(`Invalid difficulty '${initialDifficulty}' found in localStorage. Defaulting to easy.`);
+            console.warn(`Invalid difficulty '${initialDifficulty}'. Defaulting to easy.`);
             initialDifficulty = 'easy';
-            localStorage.setItem('selectedDifficulty', initialDifficulty); // Correct localStorage if invalid
+            localStorage.setItem('selectedDifficulty', initialDifficulty);
         }
 
         let initialDuration;
@@ -605,37 +689,34 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'expert':      initialDuration = 90;  break;
             case 'insane':      initialDuration = 60;  break;
             case 'impossible':  initialDuration = 45;  break;
-            case 'easy':
             default:            initialDuration = 180; break;
         }
-        console.log(`Initial difficulty from localStorage: ${initialDifficulty}, Initial duration: ${initialDuration}`);
+        // console.log(`Initial difficulty: ${initialDifficulty}, Initial duration: ${initialDuration}`);
 
-        // Update the time display element if it exists
         if (localTimeDisplay) {
             const initialMinutes = Math.floor(initialDuration / 60);
             const initialSeconds = initialDuration % 60;
             const timeString = `${initialMinutes}:${initialSeconds < 10 ? '0' : ''}${initialSeconds}`;
             localTimeDisplay.textContent = timeString;
-            console.log(`Initial time display set to: ${timeString}`);
-            // Also update the global timeLeft variable to match the initial display
             timeLeft = initialDuration;
         } else {
-            console.error("Time display element (#time) not found during initial setup!");
+            console.error("Time display element (#time) not found!");
         }
-        // --- End Initial Timer Display Setup ---
 
-
-        // Setup other initial displays and states for game page
         if (localScoreDisplay) {
              localScoreDisplay.textContent = score; // Show initial score (0)
         } else {
              console.error("Score display element (#score) not found!");
         }
 
+        // Initialize lives display
+        lives = MAX_LIVES; // Ensure lives are set before display
+        updateLivesDisplay(); // Show initial hearts
+
         if (localQuestionPopup) {
              localQuestionPopup.classList.add('hidden'); // Ensure popup is hidden initially
         } else {
-             console.error("Question popup element not found during initial setup!");
+             console.error("Question popup element not found!");
         }
 
         // Add listeners for game page buttons
@@ -643,159 +724,92 @@ document.addEventListener('DOMContentLoaded', () => {
             localStartButton.addEventListener('click', startGame);
             localStartButton.disabled = false; // Ensure start button is enabled initially
         } else {
-            console.error("Start New Game button not found on gamePlace.html.");
+            console.error("Start New Game button not found.");
         }
         if (localConfirmButton) {
             localConfirmButton.addEventListener('click', confirmAnswer);
         } else {
-             console.error("Confirm Answer button not found on gamePlace.html.");
+             console.error("Confirm Answer button not found.");
         }
 
 
     } else if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
          console.log("On index.html or root");
-        // We are on the main menu page
         if (playButtonIndex) {
             playButtonIndex.addEventListener('click', () => {
                 window.location.href = 'levels.html';
             });
         } else {
-             console.error("Play button (#play-button) not found on index.html.");
+             console.error("Play button (#play-button) not found.");
         }
 
-        // Fix for "How to play" button
+        // Popup listeners for index.html
         const howToPlayButton = document.getElementById('how-to-play');
-        if (howToPlayButton) {
-            howToPlayButton.addEventListener('click', () => {
-                const popup = document.getElementById('how-to-play-popup');
-                if (popup) popup.classList.remove('hidden');
-            });
-        }
-
-        // Fix for "Leaderboards" button
         const leaderboardsButton = document.getElementById('leaderboards');
-        if (leaderboardsButton) {
-            leaderboardsButton.addEventListener('click', () => {
-                const popup = document.getElementById('leaderboards-popup');
-                if (popup) popup.classList.remove('hidden');
-            });
-        }
-
-        // Fix for "Sound" button
         const soundSettingsButton = document.getElementById('sound-settings');
-        if (soundSettingsButton) {
-            soundSettingsButton.addEventListener('click', () => {
-                const popup = document.getElementById('sound-popup');
-                if (popup) popup.classList.remove('hidden');
-            });
-        }
-
-        // Close buttons for popups
         const closeHowToPlay = document.getElementById('close-how-to-play');
-        if (closeHowToPlay) {
-            closeHowToPlay.addEventListener('click', () => {
-                const popup = document.getElementById('how-to-play-popup');
-                if (popup) popup.classList.add('hidden');
-            });
-        }
-
         const closeLeaderboards = document.getElementById('close-leaderboards-popup');
-        if (closeLeaderboards) {
-            closeLeaderboards.addEventListener('click', () => {
-                const popup = document.getElementById('leaderboards-popup');
-                if (popup) popup.classList.add('hidden');
-            });
-        }
-
         const closeSoundPopup = document.getElementById('close-sound-popup');
-        if (closeSoundPopup) {
-            closeSoundPopup.addEventListener('click', () => {
-                const popup = document.getElementById('sound-popup');
-                if (popup) popup.classList.add('hidden');
-            });
-        }
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeValue = document.getElementById('volume-value');
 
-        console.log("Event listeners for index.html buttons set up.");
+        if (howToPlayButton) howToPlayButton.addEventListener('click', () => document.getElementById('how-to-play-popup')?.classList.remove('hidden'));
+        if (leaderboardsButton) leaderboardsButton.addEventListener('click', () => document.getElementById('leaderboards-popup')?.classList.remove('hidden'));
+        if (soundSettingsButton) soundSettingsButton.addEventListener('click', () => document.getElementById('sound-popup')?.classList.remove('hidden'));
+        if (closeHowToPlay) closeHowToPlay.addEventListener('click', () => document.getElementById('how-to-play-popup')?.classList.add('hidden'));
+        if (closeLeaderboards) closeLeaderboards.addEventListener('click', () => document.getElementById('leaderboards-popup')?.classList.add('hidden'));
+        if (closeSoundPopup) closeSoundPopup.addEventListener('click', () => document.getElementById('sound-popup')?.classList.add('hidden'));
+
+        if (volumeSlider && volumeValue) {
+            volumeSlider.addEventListener('input', () => {
+                volumeValue.textContent = `Volume: ${volumeSlider.value}%`;
+                // Add actual sound volume adjustment logic here if needed
+            });
+             // Initialize display
+             volumeValue.textContent = `Volume: ${volumeSlider.value}%`;
+        }
+        // console.log("Event listeners for index.html buttons set up."); // Your original log
+
     } else if (window.location.pathname.includes('levels.html')) {
          console.log("On levels.html");
-
-        // Fix for level selection on levels.html
         const levels = document.querySelectorAll('.level');
         levels.forEach(level => {
             level.addEventListener('click', () => {
-                levels.forEach(l => l.classList.remove('selected')); // Deselect all levels
-                level.classList.add('selected'); // Select the clicked level
+                levels.forEach(l => l.classList.remove('selected'));
+                level.classList.add('selected');
             });
         });
 
-        // Fix for the "Start Game" button on levels.html
-        const startGameButton = document.getElementById('start-game-button');
-        if (startGameButton) {
-            startGameButton.addEventListener('click', () => {
-                const selectedLevel = document.querySelector('.level.selected');
-                if (selectedLevel) {
-                    const level = selectedLevel.dataset.level;
-                    localStorage.setItem('selectedDifficulty', level); // Save selected level
+        const startGameButtonLevels = document.getElementById('start-game-button');
+        if (startGameButtonLevels) {
+            startGameButtonLevels.addEventListener('click', () => {
+                const selectedLevelEl = document.querySelector('.level.selected');
+                if (selectedLevelEl) {
+                    const level = selectedLevelEl.dataset.level;
+                    localStorage.setItem('selectedDifficulty', level);
                     window.location.href = 'gamePlace.html';
                 } else {
-                    alert('Please select a level before starting the game!');
+                    alert('Please select a level!');
                 }
             });
         }
 
-        // Fix for buttons inside images (e.g., "How to play", "Leaderboards", "Sound")
+        // Popup listeners for levels.html (copied from your index.html logic, adjust if needed)
         const howToPlayButton = document.getElementById('how-to-play');
         const leaderboardsButton = document.getElementById('leaderboards');
         const soundSettingsButton = document.getElementById('sound-settings');
-
-        if (howToPlayButton) {
-            howToPlayButton.addEventListener('click', () => {
-                const popup = document.getElementById('how-to-play-popup');
-                if (popup) popup.classList.remove('hidden');
-            });
-        }
-
-        if (leaderboardsButton) {
-            leaderboardsButton.addEventListener('click', () => {
-                const popup = document.getElementById('leaderboards-popup');
-                if (popup) popup.classList.remove('hidden');
-            });
-        }
-
-        if (soundSettingsButton) {
-            soundSettingsButton.addEventListener('click', () => {
-                const popup = document.getElementById('sound-popup');
-                if (popup) popup.classList.remove('hidden');
-            });
-        }
-
-        // Close buttons for popups
         const closeHowToPlay = document.getElementById('close-how-to-play');
         const closeLeaderboards = document.getElementById('close-leaderboards-popup');
         const closeSoundPopup = document.getElementById('close-sound-popup');
 
-        if (closeHowToPlay) {
-            closeHowToPlay.addEventListener('click', () => {
-                const popup = document.getElementById('how-to-play-popup');
-                if (popup) popup.classList.add('hidden');
-            });
-        }
+        if (howToPlayButton) howToPlayButton.addEventListener('click', () => document.getElementById('how-to-play-popup')?.classList.remove('hidden'));
+        if (leaderboardsButton) leaderboardsButton.addEventListener('click', () => document.getElementById('leaderboards-popup')?.classList.remove('hidden'));
+        if (soundSettingsButton) soundSettingsButton.addEventListener('click', () => document.getElementById('sound-popup')?.classList.remove('hidden'));
+        if (closeHowToPlay) closeHowToPlay.addEventListener('click', () => document.getElementById('how-to-play-popup')?.classList.add('hidden'));
+        if (closeLeaderboards) closeLeaderboards.addEventListener('click', () => document.getElementById('leaderboards-popup')?.classList.add('hidden'));
+        if (closeSoundPopup) closeSoundPopup.addEventListener('click', () => document.getElementById('sound-popup')?.classList.add('hidden'));
 
-        if (closeLeaderboards) {
-            closeLeaderboards.addEventListener('click', () => {
-                const popup = document.getElementById('leaderboards-popup');
-                if (popup) popup.classList.add('hidden');
-            });
-        }
-
-        if (closeSoundPopup) {
-            closeSoundPopup.addEventListener('click', () => {
-                const popup = document.getElementById('sound-popup');
-                if (popup) popup.classList.add('hidden');
-            });
-        }
     }
-
 
     // --- Global Elements (like sound button if it exists on multiple pages) ---
     if (localSoundButton) {
@@ -804,17 +818,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Fix for volume slider functionality
+    // --- Your original volume slider fix ---
     const volumeSlider = document.getElementById('volume-slider');
     const volumeValue = document.getElementById('volume-value');
-
     if (volumeSlider && volumeValue) {
         volumeSlider.addEventListener('input', () => {
             const volume = volumeSlider.value;
             volumeValue.textContent = `Volume: ${volume}%`;
         });
+        // Initialize display if needed
+        // volumeValue.textContent = `Volume: ${volumeSlider.value}%`;
     }
+    // console.log("Volume slider functionality set up."); // Your original log
 
-    console.log("Volume slider functionality set up.");
+    // --- Your original button sound fix ---
+    const buttonSound = document.getElementById('button-sound');
+    const buttonsWithSound = document.querySelectorAll('.button-with-sound'); // Make sure buttons have this class
+    buttonsWithSound.forEach(button => {
+        button.addEventListener('click', () => {
+            if (buttonSound) {
+                buttonSound.currentTime = 0;
+                buttonSound.play();
+            }
+        });
+    });
+
     console.log("Initial setup complete."); // Log: End of setup
 });

@@ -9,38 +9,28 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<!-- VOEG DEZE KLASSE TOE -->
 <body class="page-with-background">
-    <!-- Gebruik .game-place als hoofd container specifiek voor deze pagina -->
     <div class="game-place">
         <header>
-            <!-- Titel kan hier blijven of verplaatst worden als nodig -->
             <h1>Hit START when you're ready!</h1>
             <div class="score-time">
                 <div class="score">Score: <span id="score">0</span></div>
+                <div id="lives-container" class="lives">
+                </div>
                 <div class="time">Time: <span id="time">3:00</span></div>
             </div>
-             <!-- Startknop hier geplaatst voor betere layout controle -->
             <button id="start-new-game" class="start-button">Start New Game</button>
         </header>
 
         <main>
-            <!-- Grid container for bugs -->
             <div id="game-container">
-                <!-- Bugs will be dynamically added here by script.js -->
             </div>
         </main>
-
-        <footer>
-            <button id="sound-button" class="sound-button">🔊</button>
-        </footer>
-
         <!-- Popup for questions -->
         <div id="question-popup" class="popup hidden">
             <div class="popup-content">
                 <p id="question-text">Question will appear here</p>
                 <div class="answers">
-                    <!-- Buttons worden door JS gevuld, maar basis structuur is nodig -->
                     <button class="answer">Answer A</button>
                     <button class="answer">Answer B</button>
                     <button class="answer">Answer C</button>
@@ -50,6 +40,11 @@
             </div>
         </div>
     </div>
-    <script src="script.js"></script> <!-- Ensure this script is included -->
+
+    <!-- Add audio element for correct and wrong answer sounds -->
+    <audio id="correct-answer-sound" src="sounds/correctsound.mp3"></audio>
+    <audio id="wrong-answer-sound" src="sounds/buzzer-or-wrong-answer-20582.mp3"></audio>
+
+    <script src="script.js"></script>
 </body>
 </html>

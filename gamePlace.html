@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
- 
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bug Busters</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> <!-- Font toegevoegd -->
     <link rel="stylesheet" href="style.css">
 </head>
- 
-<body>
+
+<!-- VOEG DEZE KLASSE TOE -->
+<body class="page-with-background">
+    <!-- Gebruik .game-place als hoofd container specifiek voor deze pagina -->
     <div class="game-place">
         <header>
+            <!-- Titel kan hier blijven of verplaatst worden als nodig -->
             <h1>Hit START when you're ready!</h1>
             <div class="score-time">
                 <div class="score">Score: <span id="score">0</span></div>
-                <!-- Make sure the ID is correct -->
-                <button id="start-new-game" class="start-button">Start New Game</button>
+                <div class="time">Time: <span id="time">3:00</span></div>
             </div>
-            <!-- Make sure the ID is correct -->
-            <div class="time">Time: <span id="time">3:00</span></div>
+             <!-- Startknop hier geplaatst voor betere layout controle -->
+            <button id="start-new-game" class="start-button">Start New Game</button>
         </header>
- 
+
         <main>
             <!-- Grid container for bugs -->
             <div id="game-container">
                 <!-- Bugs will be dynamically added here by script.js -->
             </div>
         </main>
- 
+
         <footer>
             <button id="sound-button" class="sound-button">🔊</button>
         </footer>
@@ -37,10 +40,11 @@
             <div class="popup-content">
                 <p id="question-text">Question will appear here</p>
                 <div class="answers">
-                    <button class="answer" data-answer="a">Answer A</button>
-                    <button class="answer" data-answer="b">Answer B</button>
-                    <button class="answer" data-answer="c">Answer C</button>
-                    <button class="answer" data-answer="d">Answer D</button>
+                    <!-- Buttons worden door JS gevuld, maar basis structuur is nodig -->
+                    <button class="answer">Answer A</button>
+                    <button class="answer">Answer B</button>
+                    <button class="answer">Answer C</button>
+                    <button class="answer">Answer D</button>
                 </div>
                 <button id="confirm-answer" class="confirm-button">Confirm</button>
             </div>

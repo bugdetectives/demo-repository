@@ -420,6 +420,9 @@ function confirmAnswer() {
 
         // Remove the correctly answered bug
         currentBug.remove(); // Remove the specific bug div
+
+        // Check if all bugs are gone
+        checkWinCondition();
     } else {
         // INCORRECT
         console.log("Answer INCORRECT");
@@ -533,6 +536,34 @@ function gameOver(message) {
     currentBug = null;
     currentQuestionData = null;
     selectedAnswerButton = null;
+}
+
+// --- Check Win Condition ---
+function checkWinCondition() {
+    if (gameContainer && gameContainer.children.length === 0) {
+        displayWinPopup();
+    }
+}
+
+// --- Display Win Popup ---
+function displayWinPopup() {
+    const winPopup = document.createElement('div');
+    winPopup.classList.add('popup');
+    winPopup.innerHTML = `
+        <div class="popup-content">
+            <p>Congratulations! You Win!</p>
+            <button id="restart-game" class="confirm-button">Restart</button>
+        </div>
+    `;
+    document.body.appendChild(winPopup);
+
+    const restartButton = document.getElementById('restart-game');
+    if (restartButton) {
+        restartButton.addEventListener('click', () => {
+            winPopup.remove();
+            startGame();
+        });
+    }
 }
 
 // --- Event Listeners ---
